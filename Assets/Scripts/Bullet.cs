@@ -4,10 +4,25 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    [SerializeField] public Rigidbody rb;
-    // Start is called before the first frame update
+    public Rigidbody rb;
+
     private void Awake()
     {
         Destroy(gameObject, 3f);
     }
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            other.gameObject.GetComponent<Enemy>().EnemyKilled();
+            //Destroy(gameObject);
+        }
+    }
+
+   
 }

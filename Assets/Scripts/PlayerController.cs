@@ -1,17 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Framework;
+
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController Instance;
+
     [SerializeField] Rigidbody _rigidbody;
     [SerializeField] FixedJoystick _joystick;
     [SerializeField] float moveSpeed;
+    [SerializeField] public PlayerData playerData;
    
 
     [Header("Bullet Stuff")]
     public float bulletspawnSpeed = 1.0f;
-    public float enemySpawnSpeed = 1.0f;
+    public float enemySpawnSpeed = 1.5f;
     private float elapsedBulletTime = 0.0f;
     private float elapsedEnemyTime = 0.0f;
     [SerializeField] GameObject bulletSpawnPoint;
@@ -22,7 +28,11 @@ public class PlayerController : MonoBehaviour
     public float minRadius = 1.0f;   // Radius of the inner circle
     public int segments = 36;    // Number of segments to approximate the circle
 
-    
+    private void Awake()
+    { 
+        if (Instance == null) Instance = this;    
+    }
+
     private void FixedUpdate() 
     {
         _rigidbody.velocity = new Vector3(_joystick.Horizontal * moveSpeed, _rigidbody.velocity.y, _joystick.Vertical * moveSpeed);
@@ -45,7 +55,7 @@ public class PlayerController : MonoBehaviour
             do
             {
                 // Generate a random point within the sphere of max radius
-                enemyPos = Random.insideUnitSphere * maxRadius;
+                enemyPos = UnityEngine.Random.insideUnitSphere * maxRadius;
 
                 // Flatten to the XZ plane and set a fixed Y position
                 enemyPos.y = 1f;
@@ -54,8 +64,14 @@ public class PlayerController : MonoBehaviour
             } while (enemyPos.magnitude < minRadius);
 
             //Vector3 enemySpawnPos = new Vector3(enemyPos.x, enemyPos.y, 0f);
-            GameObject enemy = Instantiate(enemyPrefab.gameObject, enemyPos, Quaternion.identity);
-            Destroy(enemy, 5f);
+
+            GameObject enemy = EnemySpawnHandler.Instance.GetEnemy();
+            if (enemy != null)
+            {
+                enemy.transform.position = enemyPos;
+                enemy.SetActive(true);
+            }
+            //Destroy(enemy, 5f);
             elapsedEnemyTime = 0.0f;
         }
     }
